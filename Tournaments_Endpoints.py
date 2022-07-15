@@ -1,11 +1,19 @@
 from Models import Base, Tournaments, Matches, Players, match_ranking
+
 from flask import Flask, jsonify, request, url_for, abort, g
+from flask_cors import CORS, cross_origin
+
+
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy import create_engine
 from datetime import datetime
+
 import json
 import random
+
+
+
 
 
 #poolclass=SingletonThreadPool
@@ -15,7 +23,10 @@ engine = create_engine('sqlite:///pilkarzyki.db', echo=True, connect_args={"chec
 Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
+
 app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 
 @app.route('/addtournament', methods = ['POST'])
@@ -50,12 +61,17 @@ def new_tournament():
 
 
 @app.route('/addplayer', methods = ['POST'])
+@cross_origin()
 def new_player():
+    print("Hello World!")
+    
     firstname = request.json.get('firstname')
     lastname = request.json.get('lastname')
     if firstname is None or lastname is None:
         print("missing arguments")
         abort(400) 
+    
+    print("Player's lastname is" + str(lastname))
         
     if session.query(Players).filter_by(lastname = lastname).first() is not None:
         print("the player you are adding exists already!")
@@ -101,29 +117,46 @@ def initiate_quartals(id):
     
     return jsonify({'tounament': str(shuffled_player_ids)})
     
-
+## Players Endpoints
 @app.route('/players/<int:id>')
 def get_player(id):
     player = session.query(Players).filter_by(id=id).one()
     if not player:
         abort(400)
     return jsonify(player.getJson())
-
-@app.route('/matches/<int:id>')
-def get_matches(id):
+ 
+@app.route('/players')
+def get_players():
+    players_list = []
+    players = session.query(Players).all()
+    if not players:
+        abort(400)
     
-    print("id: ", id)
-    matches = session.query(Matches).filter_by(tournament=id).all()
+    for player in players:
+        players_list.append(player.getJson())
+    
+    return jsonify(players_list)  
+
+## Matches Endpoints
+@app.route('/matches',  methods = ['GET'])
+def get_matches():
+    round_matches = []
+    tournament = request.args["tournament"]
+    round = request.args["round"]
+    print("Tournament: ", tournament)
+    print("Round: ", round)
+    
+    matches = session.query(Matches).filter_by(tournament=tournament).all()
     if not matches:
         abort(400)
     
-   # print("First match is: ", matches[0])
+    for match in matches:
+        if match.match_ranking.find(round) == 0:
+            round_matches.append(match.getJson())
     
-    jsonStr = json.dumps(matches[0].__dict__)
-
-    return jsonify({'Tournament': matches[0].tournament})
+    return jsonify(round_matches)
 
 
 if __name__ == '__main__':
     app.debug = True
-    app.run(host='localhost', port=5000)
+    app.run(host='127.0.0.1', port=8080)
