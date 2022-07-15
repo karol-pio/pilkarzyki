@@ -3,6 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy import create_engine
 import json
+from datetime import datetime
 
 Base = declarative_base()
 
@@ -24,6 +25,11 @@ class Matches(Base):
     player2 = Column(Integer)
     winner = Column(Integer)
     losser = Column(Integer)
+    
+    def getJson(self):
+        match_json = '{"id":"'+str(self.id)+'", "date":"'+str(self.date)+'", "player1":"'+str(self.player1)+'", "player2":"'+str(self.player2)+'", "winner":"'+str(self.winner)+'"}'
+        print(match_json)
+        return json.loads(match_json)
     
     
 class Players(Base):
