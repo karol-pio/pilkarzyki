@@ -73,10 +73,10 @@ def new_player():
     
     print("Player's lastname is" + str(lastname))
         
-    if session.query(Players).filter_by(lastname = lastname).first() is not None:
-        print("the player you are adding exists already!")
-        player = session.query(Players).filter_by(lastname=lastname).first()
-        return jsonify({'message':'player already exists'}), 200
+    #if session.query(Players).filter_by(lastname = lastname).first() is not None:
+    #   print("the player you are adding exists already!")
+    #    player = session.query(Players).filter_by(lastname=lastname).first()
+    #    return jsonify({'message':'player already exists'}), 200
         
     player = Players()
     player.lastname = lastname 
