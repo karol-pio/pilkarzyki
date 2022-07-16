@@ -1,2 +1,2 @@
-runtime: python27
+runtime: python37
 env: standard
